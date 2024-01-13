@@ -6,7 +6,7 @@ const connectDB = async () => {
     const connectionInstance = await mongoose.connect(
       process.env.MONGO_DB_URI + "/" + dbName
     );
-    console.log(connectionInstance.connections);
+    // console.log(connectionInstance.connections);
   } catch (error) {
     console.log(`MongoDB connection Failed : ${error}`);
   }

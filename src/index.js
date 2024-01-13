@@ -1,9 +1,16 @@
-import express from "express";
 import "dotenv/config";
 import connectDB from "./db/connectDB.js";
-const app = express();
+import { app } from "./app.js";
 
-connectDB();
+connectDB()
+  .then((x) => {
+    app.listen(process.env.PORT, () => {
+      console.log("Server is started Successfully");
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
 // app.get("/", (req, res) => {
 //   res.send("<h1>Welcome to our home page</h1>");
