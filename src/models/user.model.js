@@ -3,34 +3,50 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema(
   {
     username: {
-      type: "String",
-      unique: true,
+      type: String,
       required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
     },
     email: {
-      type: "String",
-      unique: true,
+      type: String,
       required: true,
+      unique: true,
+      lowecase: true,
+      trim: true,
     },
     fullName: {
-      type: "String",
-      unique: true,
+      type: String,
       required: true,
+      trim: true,
+      index: true,
     },
     avatar: {
-      type: "String",
+      type: String, // cloudinary url
+      required: true,
     },
     coverImage: {
-      type: "String",
+      type: String, // cloudinary url
     },
+    watchHistory: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
     password: {
-      type: "String",
+      type: String,
+      required: [true, "Password is required"],
     },
     refreshToken: {
-      type: "String",
+      type: String,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 export const User = mongoose.model("User", userSchema);
