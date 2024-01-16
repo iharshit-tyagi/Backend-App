@@ -16,3 +16,10 @@ app.use(
     limit: "20kb",
   })
 );
+//Routes
+import userRouter from "./routes/user.route.js";
+
+app.get("/", (req, res) => {
+  res.send("<h1>Welcome to our home page</h1>");
+});
+app.use("/users", userRouter);
