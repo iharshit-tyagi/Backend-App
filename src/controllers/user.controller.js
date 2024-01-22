@@ -27,7 +27,6 @@ export const registerUser = async (req, res) => {
       },
     ],
   });
-  console.log(userExist);
   if (userExist) {
     res.send(new ApiError(410, "This Username or Email Already Exists"));
     return;
@@ -44,32 +43,32 @@ export const registerUser = async (req, res) => {
   //To upload to cloudinary
   const avatar = await uploadFile(avatarLocalPath);
   const coverImage = await uploadFile(coverImageLocalPath);
-  console.log(avatar);
-  // const user = await User.create({
-  //   userName: userName.toLowerCase(),
-  //   fullName,
-  //   email,
-  //   password,
-  //   avatar: avatar.url,
-  //   coverImage: coverImage.url || "",
-  // });
+  const user = await User.create({
+    username: userName.toLowerCase(),
+    fullName,
+    email,
+    password,
+    avatar: avatar.url,
+    coverImage: coverImage.url || "",
+  });
 
-  // //finding user in Database and rmeoving the password and refresh tokens
-  // const createdUser = await User.findById(user._id).select(
-  //   "-password -refreshToken"
-  // );
+  //finding user in Database and rmeoving the password and refresh tokens
+  const createdUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
 
-  // if (!createdUser) {
-  //   res
-  //     .status(500)
-  //     .json(
-  //       new ApiError(500, "Something went wrong while registering the user")
-  //     );
-  // }
+  if (!createdUser) {
+    res
+      .status(500)
+      .json(
+        new ApiError(500, "Something went wrong while registering the user")
+      );
+    return;
+  }
 
-  // return res
-  //   .status(201)
-  //   .json(new ApiResponse(200, "iu", "User registered Successfully"));
+  return res
+    .status(201)
+    .json(new ApiResponse(200, createdUser, "User registered Successfully"));
 };
 
 export const loginUser = async (req, res) => {
