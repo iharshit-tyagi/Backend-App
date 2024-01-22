@@ -11,9 +11,7 @@ export const registerUser = async (req, res) => {
   if (!userName || !email || !fullName || !password) {
     res
       .status(401)
-      .json(
-        new ApiError(401, "One or More  required Parameter is Empty", ["ytg"])
-      );
+      .json(new ApiError(401, "", " One or More  required Parameter is Empty"));
     return;
   }
 
@@ -32,12 +30,21 @@ export const registerUser = async (req, res) => {
     return;
   }
   //To get the local file paths after multer saved them on local server
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  // const avatarLocalPath = req.files?.avatar[0]?.path;
+  //const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  let avatarLocalPath = "";
+  let coverImageLocalPath = "";
+  if (req?.files?.avatar) {
+    avatarLocalPath = req.files?.avatar[0]?.path;
+  }
+  if (req?.files?.coverImage) {
+    console.log(!req?.files?.coverImage);
+    coverImageLocalPath = req.files?.coverImage[0]?.path;
+  }
 
   //To check if we have avatar image
   if (!avatarLocalPath) {
-    res.status(400).json(new ApiError(400, "Avatar File is Required."));
+    res.status(400).json(new ApiError(400, "", "Avatar File is Required."));
     return;
   }
   //To upload to cloudinary
@@ -49,7 +56,7 @@ export const registerUser = async (req, res) => {
     email,
     password,
     avatar: avatar.url,
-    coverImage: coverImage.url || "",
+    coverImage: coverImage?.url || "",
   });
 
   //finding user in Database and rmeoving the password and refresh tokens
