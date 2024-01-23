@@ -1,4 +1,5 @@
 import { ApiError } from "../utils/ApiError.js";
+
 import { User } from "../models/user.model.js";
 import uploadFile from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -110,7 +111,13 @@ export const loginUser = async (req, res) => {
   if (!user) {
     res
       .status(404)
-      .json(new ApiError(400, "", "User Does not exist , Please Signup"));
+      .json(
+        new ApiError(
+          400,
+          "This is message.",
+          "User Does not exist , Please Signup"
+        )
+      );
     return;
   }
 
@@ -126,10 +133,15 @@ export const loginUser = async (req, res) => {
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
+  //cookie will only be accessible through the HTTP protocol, and the browser will only send it over secure (HTTPS) connections.
+  const cookieOptions = {
+    httpOnly: true,
+    secure: true,
+  };
   res
     .status(200)
-    .cookie("accessToken", accessToken)
-    .cookie("refreshToken", refreshToken)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(
         200,
