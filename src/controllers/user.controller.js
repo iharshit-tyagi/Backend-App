@@ -150,3 +150,27 @@ export const loginUser = async (req, res) => {
       )
     );
 };
+
+export const logoutUser = async (req, res) => {
+  //Now due to middleware, I have user info in req object
+  //1. Clear access token from db
+  //2.Clear cookie
+  const cookieOptions = {
+    httpOnly: true,
+    secure: true,
+  };
+  try {
+    await User.findByIdAndUpdate(req?.user?._id, {
+      $set: {
+        //in case we need to update multiple values
+        refreshToken: undefined,
+      },
+    });
+  } catch (error) {}
+  //To clear value from Cookies
+  res
+    .status(200)
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
+    .json(new ApiResponse(200, null, "Logged Out"));
+};
