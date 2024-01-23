@@ -22,9 +22,7 @@ userRouter.post(
 
 userRouter.post("/login", (req, res, next) => {
   loginUser(req, res);
-});
-userRouter.post("/login", (req, res) => {
-  req.body;
+  // console.log(req.body);
 });
 
 export default userRouter;

@@ -61,7 +61,7 @@ userSchema.pre("save", async function (next) {
 
 //Adding method to the schema--> To check if password is correct or not
 userSchema.methods.issPasswordCorrect = async function (password) {
-  await bcrypt.compare(password, this.password);
+  return await bcrypt.compare(password, this.password);
 };
 
 //To Generate Refresh Token
