@@ -4,7 +4,14 @@ import uploadFile from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const generateAccessAndRefreshToken = async (userID) => {
-  const user = User.findById(userID);
+  const user = await User.findById(userID);
+  console.log(userID);
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+  console.log(accessToken, refreshToken);
+  user.refreshToken = refreshToken;
+  user.save();
+  return { accessToken, refreshToken };
 };
 export const registerUser = async (req, res) => {
   // get user details from frontend
@@ -108,15 +115,15 @@ export const loginUser = async (req, res) => {
       .json(new ApiError(400, "", "User Does not exist , Please Signup"));
     return;
   }
-  // console.log(user);
-  console.log(password);
+
   const isPasswordValid = await user.issPasswordCorrect(password);
-  console.log(isPasswordValid);
   if (!isPasswordValid) {
     res.status(403).json(new ApiError(403, "", "Invalid Credentials"));
     return;
   }
-
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
   // generateAccessAndRefreshToken(user._id);
   res.status(200).json({ message: "Logged In" });
 };
