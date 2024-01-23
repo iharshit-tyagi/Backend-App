@@ -5,12 +5,12 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 const generateAccessAndRefreshToken = async (userID) => {
   const user = await User.findById(userID);
-  console.log(userID);
+
   const accessToken = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
-  console.log(accessToken, refreshToken);
+
   user.refreshToken = refreshToken;
-  user.save();
+  await user.save();
   return { accessToken, refreshToken };
 };
 export const registerUser = async (req, res) => {
@@ -89,8 +89,6 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  //validate password
-
   //read data
   const { username, password, email } = req.body;
 
@@ -124,6 +122,19 @@ export const loginUser = async (req, res) => {
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id
   );
-  // generateAccessAndRefreshToken(user._id);
-  res.status(200).json({ message: "Logged In" });
+  //To get info of loggedIn User --Now this will have refresh token
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+  res
+    .status(200)
+    .cookie("accessToken", accessToken)
+    .cookie("refreshToken", refreshToken)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser, accessToken, refreshToken },
+        "Logged In Successfully"
+      )
+    );
 };
