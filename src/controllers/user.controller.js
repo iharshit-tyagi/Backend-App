@@ -3,7 +3,9 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import uploadFile from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import Jwt from "jsonwebtoken";
 
+//this will update in databse also
 const generateAccessAndRefreshToken = async (userID) => {
   const user = await User.findById(userID);
 
@@ -173,4 +175,51 @@ export const logoutUser = async (req, res) => {
     .clearCookie("accessToken", cookieOptions)
     .clearCookie("refreshToken", cookieOptions)
     .json(new ApiResponse(200, null, "Logged Out"));
+};
+export const refreshAccessToken = async (req, res) => {
+  const incomingRefreshToken = req.cookies?.refreshToken;
+  if (!incomingRefreshToken) {
+    res.status(401).json({
+      message: "User is not logged in",
+    });
+    return;
+  }
+  const decodedToken = await Jwt.verify(
+    incomingRefreshToken,
+    process.env.REFRESH_TOKEN_SECRET
+  );
+
+  const user = await User.findById(decodedToken._id);
+  if (!user) {
+    res.status(401).json({
+      message: "Refresh Token is Invalid",
+    });
+    return;
+  }
+
+  if (incomingRefreshToken !== user.refreshToken) {
+    res.status(401).json({
+      message: "Refresh Token has expired or Invalid",
+    });
+    return;
+  }
+  //also updated in Db by the below method
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
+
+  res
+    .status(200)
+    .cookie("accessToken", accessToken)
+    .cookie("refreshToken", refreshToken)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          accessToken,
+          refreshToken,
+        },
+        "Access Token is refreshed"
+      )
+    );
 };
