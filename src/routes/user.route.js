@@ -4,10 +4,16 @@ import {
   loginUser,
   logoutUser,
   refreshAccessToken,
+  changeCurrentPassword,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import verifyJWT from "../middlewares/auth.middleware.js";
 const userRouter = express.Router();
+
+//TODO Add error handler middleware
+// userRouter.use((err, req, res, next) => {
+//   res
+// });
 
 userRouter.post(
   "/register",
@@ -30,7 +36,10 @@ userRouter.post("/login", (req, res, next) => {
   loginUser(req, res);
   // console.log(req.body);
 });
+
+//secure routes --> verifyJwt can be used to check if user is logged in or not
 userRouter.post("/logout", verifyJWT, logoutUser);
 
 userRouter.route("/refresh-token").post(refreshAccessToken);
+userRouter.post("/changeCurrentPassword", verifyJWT, changeCurrentPassword);
 export default userRouter;

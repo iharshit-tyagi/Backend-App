@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import uploadFile from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import Jwt from "jsonwebtoken";
+import { cookieOptions } from "../utils/constants.js";
 
 //this will update in databse also
 const generateAccessAndRefreshToken = async (userID) => {
@@ -136,10 +137,7 @@ export const loginUser = async (req, res) => {
     "-password -refreshToken"
   );
   //cookie will only be accessible through the HTTP protocol, and the browser will only send it over secure (HTTPS) connections.
-  const cookieOptions = {
-    httpOnly: true,
-    secure: true,
-  };
+
   res
     .status(200)
     .cookie("accessToken", accessToken, cookieOptions)
@@ -157,10 +155,7 @@ export const logoutUser = async (req, res) => {
   //Now due to middleware, I have user info in req object
   //1. Clear access token from db
   //2.Clear cookie
-  const cookieOptions = {
-    httpOnly: true,
-    secure: true,
-  };
+
   try {
     await User.findByIdAndUpdate(req?.user?._id, {
       $set: {
@@ -221,5 +216,41 @@ export const refreshAccessToken = async (req, res) => {
         },
         "Access Token is refreshed"
       )
+    );
+};
+export const changeCurrentPassword = async (req, res) => {
+  //Check if old password is correct
+  //take new password and encrypt it and save it
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    res
+      .status(401)
+      .json(
+        new ApiError(
+          401,
+          "Invalid Request, Please share both old and new password"
+        )
+      );
+    return;
+  }
+  const user = await User.findById(req?.user?._id);
+
+  const isPasswordValid = await user.issPasswordCorrect(oldPassword);
+
+  if (!isPasswordValid) {
+    res
+      .status(200)
+      .json(
+        new ApiError(401, "Invalid Password, Please enter correct password.")
+      );
+    return;
+  }
+  user.password = newPassword;
+  await user.save();
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, isPasswordValid, "Password is sucessfully updated.")
     );
 };
