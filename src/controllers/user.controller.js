@@ -254,3 +254,7 @@ export const changeCurrentPassword = async (req, res) => {
       new ApiResponse(200, isPasswordValid, "Password is sucessfully updated.")
     );
 };
+export const getCurrentUser = async (req, res) => {
+  req.user.password = undefined;
+  res.status(200).json(new ApiResponse(200, req?.user, "Successful"));
+};
