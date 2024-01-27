@@ -5,6 +5,7 @@ import uploadFile from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import Jwt from "jsonwebtoken";
 import { cookieOptions } from "../utils/constants.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
 //this will update in databse also
 const generateAccessAndRefreshToken = async (userID) => {
@@ -259,20 +260,57 @@ export const getCurrentUser = async (req, res) => {
   res.status(200).json(new ApiResponse(200, req?.user, "Successful"));
 };
 
-export const updateEmail = async (req, res) => {
+export const updateEmailAndFullName = async (req, res) => {
   const { email, fullName } = req.body;
   if (!email || !fullName) {
     res.status(401).json(new ApiError(401, "All fields are required."));
     return;
   }
-  const user = User.findByIdAndUpdate(req?.user?._id, {
-    $set: {
-      fullName,
-      email,
+  console.log(req?.user?._id);
+  const user = await User.findByIdAndUpdate(
+    req?.user?._id,
+    {
+      $set: {
+        fullName,
+        email,
+      },
     },
-  }).select("-password");
+    //When new is set to true, the method returns the modified document rather than the original document.
+    { new: true }
+  ).select("-password");
+  console.log(user);
   res
     .status(200)
     .json(new ApiResponse(200, user, "Account details have been updated"));
   console.log(user);
+};
+
+export const updateAvatar = async (req, res) => {
+  const localAvatarPath = req?.file?.path;
+  const avatar = await uploadFile(localAvatarPath);
+  if (!localAvatarPath) {
+    res.status(410).json(new ApiError(410, "Please select a file to upload"));
+    return;
+  }
+  // console.log(avatar);
+  if (!avatar) {
+    res
+      .status(410)
+      .json(new ApiError(410, "Something went Wrong while uploading file"));
+    return;
+  }
+  const user = await User.findByIdAndUpdate(
+    req?.user?._id,
+    {
+      $set: {
+        avatar: avatar?.url,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password");
+  res
+    .status(200)
+    .json(new ApiResponse(200, user, "Avatar Successfully Updated."));
 };
