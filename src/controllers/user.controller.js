@@ -258,3 +258,21 @@ export const getCurrentUser = async (req, res) => {
   req.user.password = undefined;
   res.status(200).json(new ApiResponse(200, req?.user, "Successful"));
 };
+
+export const updateEmail = async (req, res) => {
+  const { email, fullName } = req.body;
+  if (!email || !fullName) {
+    res.status(401).json(new ApiError(401, "All fields are required."));
+    return;
+  }
+  const user = User.findByIdAndUpdate(req?.user?._id, {
+    $set: {
+      fullName,
+      email,
+    },
+  }).select("-password");
+  res
+    .status(200)
+    .json(new ApiResponse(200, user, "Account details have been updated"));
+  console.log(user);
+};
