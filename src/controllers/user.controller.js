@@ -314,3 +314,33 @@ export const updateAvatar = async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, user, "Avatar Successfully Updated."));
 };
+
+export const updateCoverImage = async (req, res) => {
+  const localCoverImagePath = req?.file?.path;
+  const coverImage = await uploadFile(localCoverImagePath);
+  if (!localCoverImagePath) {
+    res.status(410).json(new ApiError(410, "Please select a file to upload"));
+    return;
+  }
+  // console.log(avatar);
+  if (!coverImage) {
+    res
+      .status(410)
+      .json(new ApiError(410, "Something went Wrong while uploading file"));
+    return;
+  }
+  const user = await User.findByIdAndUpdate(
+    req?.user?._id,
+    {
+      $set: {
+        coverImage: coverImage?.url,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password");
+  res
+    .status(200)
+    .json(new ApiResponse(200, user, "Cover Image Successfully Updated."));
+};
